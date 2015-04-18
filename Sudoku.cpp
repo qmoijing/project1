@@ -19,7 +19,7 @@ void Sudoku::GiveQuestion()
     {
         for(j=0;j<12;j++){question_1[i][j]=question[i][j];}
     }
-    /*旋轉*/
+    /*旋轉,4選1*/
     int a=rand()%4;
     switch(a)
     {
@@ -44,7 +44,7 @@ void Sudoku::GiveQuestion()
                 }
                 break;
     }
-    /*數字對調*/
+    /*數字b和數字c對調*/
     int change;
     int b=rand()%8+1;
     int c=rand()%8+1;
@@ -74,6 +74,7 @@ void Sudoku::GiveQuestion()
     {
         for(j=0;j<12;j++)
         {
+            /*將數字排列整齊*/
             if(question[i][j]==-1){cout<<question[i][j]<<" ";}
             if(question[i][j]!=-1){cout<<" "<<question[i][j]<<" ";}
         }
@@ -82,108 +83,111 @@ void Sudoku::GiveQuestion()
 }
 void Sudoku::ReadIn()
 {
-	for(int i=0;i<144;i++){cin>>sudoku[i];}
+    for(int i=0;i<144;i++){cin>>sudoku[i];}
 }
 bool Sudoku::Check()
 {
-	int i,j;
-	int count_space;
-	/*檢查數字是否在-1~9*/
-	for(i=0;i<144;i++)
+    int i,j;
+    int count_space;
+    /*檢查數字是否在-1~9*/
+    for(i=0;i<144;i++)
     {
-		if(sudoku[i]>9||sudoku[i]<-1){return false;}
+        if(sudoku[i]>9||sudoku[i]<-1){return false;}
+    }
+    /*檢查橫排*/
+    for(i=0;i<12;i++)
+    {
+        /*bool陣列-->若有x,則array[x]true,否則為false*/
+        bool num_r[11]={false};
+	for(j=0;j<12;j++)
+	{
+	    if(sudoku[j+12*i]!=0&&sudoku[j+12*i]!=-1&&num_r[sudoku[j+12*i]+1]==1){return false;}
+	    else{num_r[sudoku[j+12*i]+1]=true;}
 	}
-	/*檢查橫排*/
-	for(i=0;i<12;i++)
+    }
+    /*檢查直排*/
+    for(i=0;i<12;i++)
     {
-		bool num[11]={false};
-		for(j=0+12*i;j<12+12*i;j++)
-		{
-			if(sudoku[j]!=0&&sudoku[j]!=-1&&num[sudoku[j]+1]==1){return false;}
-			else{num[sudoku[j]+1]=true;}
-		}
-	}
-	/*檢查直排*/
-	for(i=0;i<12;i++)
-    {
-		bool num[11]={false};
-		for(j=i;j<=i+132;j=j+12)
+        bool num_c[11]={false};
+	for(j=0;j<12;j++)
         {
-			if(sudoku[j]!=0&&sudoku[j]!=-1&&num[sudoku[j]+1]==1){return false;}
-			else{num[sudoku[j]+1]=true;}
-		}
+	    int k=i+j*12;
+            if(sudoku[k]!=0&&sudoku[k]!=-1&&num_c[sudoku[k]+1]==1){return false;}
+	    else{num_c[sudoku[k]+1]=true;}
 	}
-	/*檢查九宮格*/
-	for(i=0;i<144;i)
+    }
+    /*檢查九宮格*/
+    for(i=0;i<144;i)
     {
-		count_space=0;//計算黑區塊
-		bool num[11]={false};
-		for(j=i;j<i+27;j)
+        count_space=0;//計算黑區塊
+	bool num_b[11]={false};
+	for(j=i;j<i+27;j)
         {
-			if(sudoku[j]==-1){count_space++;}
-			else if(sudoku[j]!=0&&num[sudoku[j]+1]==1){return false;}
-			else{num[sudoku[j]+1]=true;}
-			/*同一個九宮格*/
-			if(j%3==2){j=j+10;}
-			else{j++;}
-		}
-		if(count_space!=9&&count_space!=0){return false;}
-		/*下一個九宮格*/
-		if((i/3+1)%4==0){i=i+27;}
-		else{i=i+3;}
+	    if(sudoku[j]==-1){count_space++;}
+	    else if(sudoku[j]!=0&&num_b[sudoku[j]+1]==1){return false;}
+	    else{num_b[sudoku[j]+1]=true;}
+	    /*同一個九宮格*/
+	    if(j%3==2){j=j+10;}
+	    else{j++;}
 	}
+	if(count_space!=9&&count_space!=0){return false;}
+	/*下一個九宮格*/
+	if((i/3+1)%4!=0){i=i+3;}
+	else{i=i+27;}
+    }
     return true;
 }
 void Sudoku::Run(int n)
 {
-	int i;
+    int i;
     if(catergory>1){return;}
-	else if(n>=144)
+    else if(n>=144)
     {
-		catergory++;
-		for(i=0;i<144;i++){ans[i]=sudoku[i];}
-	}
-	else if(sudoku[n]!=0){Run(n+1);}//不為空格
-	else
+        catergory++;
+	for(i=0;i<144;i++){ans[i]=sudoku[i];}
+    }
+    else if(sudoku[n]!=0){Run(n+1);}//不為空格
+    else
     {
-		for(i=1;i<=9;i++)
+        for(i=1;i<=9;i++)
         {
-			sudoku[n]=i;
-			if(Check()==0){sudoku[n]=0;}//答案錯誤
-			else
+	    sudoku[n]=i;
+	    if(Check()==0){sudoku[n]=0;}//答案錯誤
+	    else
             {
-				Run(n+1);
-				sudoku[n]=0;
-			}
-		}
+	        Run(n+1);
+		sudoku[n]=0;
+	    }
 	}
+    }
 }
 void Sudoku::Solve()
 {
-	int i;
-	int count_zero=0;
-	int count_space=0;
-	catergory=0;
-	for(int j=0;j<144;j++)//檢查黑區塊
+    int i;
+    int count_zero=0;
+    int count_space=0;
+    catergory=0;
+    for(int j=0;j<144;j++)//檢查黑區塊
     {
-		if(sudoku[j]==-1){count_space++;}
-	}
-	/*檢查題目*/
-	if(Check()==0){cout<<"0"<<endl;}
-	else if(count_space!=36){cout<<"0"<<endl;}//黑區塊不完整
-	else
+        if(sudoku[j]==-1){count_space++;}
+    }
+    /*檢查題目*/
+    if(count_space!=36){cout<<"0"<<endl;}//黑區塊不完整
+    else if(Check()==0){cout<<"0"<<endl;}
+    else
     {
-		Run(0);
-		for(i=0;i<144;i++){sudoku[i]=ans[i];}
-		for(i=0;i<144;i++)//檢查是否有零
+        Run(0);
+	for(i=0;i<144;i++){sudoku[i]=ans[i];}
+	for(i=0;i<144;i++)//檢查是否有零
         {
-			if(sudoku[i]==0){count_zero=1;}
-		}
-		if(count_zero==0)
+	    if(sudoku[i]==0){count_zero=1;}
+        }
+        if(count_zero==1){cout<<"0"<<endl;}//無解
+	if(count_zero==0)
         {
             if(catergory==1)//一組解
             {
- 				cout << "1" <<endl;
+ 		cout << "1" <<endl;
                 int change_line=0;
                 for(i=0;i<144;i++)//print出答案
                 {
@@ -197,8 +201,7 @@ void Sudoku::Solve()
                     }
                 }
             }
-			else{cout<<"2"<<endl;}//多組解
-		}
-		else if(count_zero==1){cout<<"0"<<endl;}//無解
+	    else{cout<<"2"<<endl;}//多組解
 	}
+    }
 }
