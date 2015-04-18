@@ -5,7 +5,7 @@ class Sudoku
     public:
         void GiveQuestion();
         void ReadIn();
-        void Check();
+        bool Check();
         void Run(int n);
         void Solve();
     private:
